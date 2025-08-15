@@ -1,3 +1,5 @@
+// This file contains the logic for Signup & Login
+
 // bcrypt hashes passwords (so they're never stored in plain text)
 const bcrypt = require('bcrypt');
 // jwt lets you issue secure "session" tokens to users who log in
