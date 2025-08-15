@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const PORT = 5050;
@@ -12,6 +13,9 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('Hello from Two Cents Together backend!');
 });
+
+// Mount auth routes
+app.use('/auth', authRoutes);
 
 // Start server
 app.listen(PORT, () => {
