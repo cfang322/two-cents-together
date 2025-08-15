@@ -4,7 +4,7 @@
 const bcrypt = require('bcrypt');
 // jwt lets you issue secure "session" tokens to users who log in
 const jwt = require('jsonwebtoken');
-// PrismaClient talks to your PostgrSQL db
+// PrismaClient talks to your PostgreSQL db
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 

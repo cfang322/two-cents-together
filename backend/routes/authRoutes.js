@@ -1,6 +1,6 @@
 // This file is exposing your endpoints. It connects URLs to logic.
 
-// You create a router and pull in the logive from the controller.
+// You create a router and pull in the logic from the controller.
 const express = require('express');
 const router = express.Router();
 const { signup, login } = require('../controllers/authController');
