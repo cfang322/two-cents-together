@@ -1,28 +1,70 @@
+"use client";
+// This page uses React state + click handlers, so it must be a Client Component.
+// Page-level metadata should live in layout.tsx (server-only).
+
 import Link from "next/link";
 import Image from "next/image";
 
-export const metadata = {
-  title: "Two Cents Together",
-  description: "A smarter way for couples to budget, track, and plan together.",
-};
+// We use React state to control which auth modal is open ("login" | "signup" | null).
+import { useState } from "react";
+
+// Our reusable auth modal (client component). Keep this import relative so it works without path aliases. The modal calls our backend /auth endpoints.
+import AuthModal from "./authModal";
 
 export default function Home() {
+  // state lives here
+  // Single source of truth for the modal state. `open` is a discriminated union:
+  //   null     → no modal
+  //   "login"  → show login
+  //   "signup" → show signup
+  // Keeping it here (in the page) lets children open/close the modal via props.
+  const [open, setOpen] = useState<null | "login" | "signup">(null);
+
   return (
     <div className="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-      <NavBar />
+      {/* Pass down *functions* (not state) so NavBar can open the modal without owning auth state itself. This keeps NavBar presentational/testable. */}
+      <NavBar
+        onLogin={() => setOpen("login")}
+        onSignup={() => setOpen("signup")}
+      />
+
       <main>
         <Hero />
         <Logos />
         <Features />
         <CTA />
       </main>
+
       <Footer />
+
+    {/* Conditionally render the modal (fixed overlay). We pass:
+    - mode: which screen to show
+    - onClose: set open → null
+    - onSwitch: flip between "login" and "signup" without closing */}
+      {open && (
+        <AuthModal
+          mode={open}
+          onClose={() => setOpen(null)}
+          onSwitch={(m) => setOpen(m)}
+        />
+      )}
     </div>
-  ); 
+  );
 }
 
 /* ---------- Nav ---------- */
-function NavBar() {
+// Accept handlers as props, and use them on the buttons
+// NavBar receives two callbacks from the page:
+// - onLogin(): open login modal
+// - onSignup(): open signup modal
+// This avoids NavBar reaching up to mutate parent state directly.
+function NavBar({
+  onLogin,
+  onSignup,
+}: {
+  onLogin: () => void;
+  onSignup: () => void;
+}) {
   return (
     <header className="sticky top-0 z-50 bg-white/70 dark:bg-zinc-950/70 backdrop-blur border-b border-zinc-200/70 dark:border-zinc-800/70">
       <div className="mx-auto max-w-7xl px-6 py-3 flex items-center justify-between">
@@ -35,12 +77,31 @@ function NavBar() {
           <a href="#reviews" className="hover:opacity-80">Reviews</a>
           <a href="#faqs" className="hover:opacity-80">FAQs</a>
         </nav>
+
+        {/* Keep your existing CTA link */}
         <Link
           href="/signup"
           className="inline-flex items-center rounded-full border border-zinc-300 dark:border-zinc-700 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:hover:bg-zinc-900"
         >
           Get Started
         </Link>
+      </div>
+
+      {/* These buttons trigger the parent-provided callbacks.
+      We keep <Link href="/signup"> for a full page route *and* buttons here for the modal experience—both are valid entry points. */}
+      <div className="mx-auto max-w-7xl px-6 pb-3 flex gap-3">
+        <button
+          onClick={onLogin}
+          className="text-sm underline hover:opacity-80"
+        >
+          Log in
+        </button>
+        <button
+          onClick={onSignup}
+          className="text-sm underline hover:opacity-80"
+        >
+          Sign up
+        </button>
       </div>
     </header>
   );
@@ -81,14 +142,11 @@ function Hero() {
             </Link>
           </div>
 
-          <p className="mt-6 text-sm text-zinc-500">
-            200k+ budgets created
-          </p>
+          <p className="mt-6 text-sm text-zinc-500">200k+ budgets created</p>
         </div>
 
         {/* Right: media slot */}
         <div className="md:col-span-5">
-          {/* Replace this with your image, Lottie, or canvas animation */}
           <div className="relative aspect-[4/5] w-full rounded-3xl ring-1 ring-zinc-200 dark:ring-zinc-800 overflow-hidden bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-zinc-900 dark:to-zinc-800">
             <div className="absolute inset-0 grid place-items-center text-sm text-zinc-400">
               Drop hero image / animation here
@@ -148,13 +206,11 @@ function Features() {
         </div>
 
         <div className="mt-12 grid gap-6 lg:grid-cols-3">
-          {/* Highlighted feature */}
           <FeatureCard
             title="Shared Couples Dashboard"
             desc="One place for joint bills, personal budgets, and upcoming expenses—always in sync."
             highlight
           />
-
           <FeatureCard
             title="Smart Allocation"
             desc="Auto-suggest how to split income and bills so goals get funded first."
@@ -189,7 +245,6 @@ function FeatureCard({
         <h3 className="text-xl font-semibold">{title}</h3>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{desc}</p>
       </div>
-      {/* visual placeholder */}
       <div className="h-44 md:h-56 bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-900 dark:to-zinc-800 grid place-items-center text-xs text-zinc-500">
         Feature visual / chart / screenshot
       </div>
