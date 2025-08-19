@@ -18,7 +18,7 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('Hello from Two Cents Together backend!');
 });
-
+ 
 // Mount auth routes
 // This connects all the /auth/signup and /auth/login routes to your app; anything stating with /auth will be handled in authRoutes.js
 app.use('/auth', authRoutes);
